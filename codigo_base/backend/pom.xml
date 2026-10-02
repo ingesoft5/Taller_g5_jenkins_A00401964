@@ -88,13 +88,13 @@
             <url>http://nexus:8081/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
-        ============================================================
-    -->
     <distributionManagement>
         <repository>
             <id>nexus-releases</id>
             <url>http://nexus:8081/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
+        ============================================================
+    -->
 
 </project>
