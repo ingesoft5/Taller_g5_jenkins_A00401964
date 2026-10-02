@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  jenkins:
+    build: .
+    container_name: jenkins
+    networks:
+      - cicd_network
+    ports:
+      - "9182:8080"
+      - "50001:50000"
+    volumes:
+      # EVALUATED: persistence of Jenkins state
+      - TODO-VOLUMEN:/var/jenkins_home
+      # EVALUATED: access to host Docker daemon
+      - TODO-SOCKET-DOCKER
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  smee:
+    build: ./smee
+    container_name: smee-client
+    environment:
+      # EVALUATED: create a unique channel at smee.io
+      - SMEE_URL=TODO-URL-DE-SU-CANAL-SMEE
+      - SMEE_TARGET=http://jenkins:8080/github-webhook/
+    networks:
+      - cicd_network
+    depends_on:
+      - jenkins
+networks:
+  cicd_network:
+    name: cicd_network
+volumes:
+  jenkins_home:

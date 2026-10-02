@@ -1,0 +1,104 @@
+// =============================================================================
+// Taller Evaluativo 2 - Fase 4: Pipeline Declarativo en Jenkins
+//
+// Complete los TODOs de cada etapa. Recuerde:
+//   - Prohibido el tag ":latest" al publicar en Nexus (empaquetamiento
+//     inmutable, Fase 2).
+//   - Las credenciales (usuario/clave de Nexus, token de GitHub) se
+//     inyectan mediante los IDs configurados en Jenkins > Credentials,
+//     NUNCA en texto plano dentro de este archivo.
+// =============================================================================
+
+pipeline {
+    agent any
+
+    environment {
+        // TODO: defina el esquema de versionado inmutable combinando el
+        // número de build de Jenkins y los primeros 7 caracteres del
+        // commit actual. Pista: use "${env.BUILD_NUMBER}" y
+        // "${env.GIT_COMMIT.take(7)}" dentro de un stage con "script {}"
+        // (GIT_COMMIT solo está disponible después del checkout).
+        IMAGE_TAG = "TODO-DEFINA-EN-UN-STAGE-SCRIPT"
+
+        // TODO: ajuste host y puerto a los de su Nexus local (Fase 3).
+        NEXUS_REGISTRY   = "TODO-HOST-REGISTRY:TODO-PUERTO-REGISTRY"
+        NEXUS_MAVEN_REPO = "http://nexus:8081/repository/maven-releases/"
+
+        // TODO: reemplace por el ID exacto de la credencial que usted
+        // creó en Jenkins > Manage Jenkins > Credentials (Fase 3.e).
+        NEXUS_CREDENTIALS_ID = "TODO-ID-CREDENCIAL-NEXUS"
+    }
+
+    stages {
+
+        stage('Checkout & Test') {
+            steps {
+                checkout scm
+
+                script {
+                    // TODO: calcule aquí IMAGE_TAG ahora que GIT_COMMIT
+                    // ya está disponible tras el checkout.
+                    // env.IMAGE_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(7)}"
+                }
+
+                dir('backend') {
+                    // TODO: ejecute la suite de pruebas unitarias y de
+                    // controlador (equivalente a la Fase 1 manual).
+                    sh 'TODO-COMANDO-MVN-TEST'
+                }
+            }
+        }
+
+        stage('Package & Tag Inmutable') {
+            steps {
+                dir('backend') {
+                    // TODO: compile el .jar sin ejecutar pruebas
+                    // (ya se ejecutaron en la etapa anterior) y construya
+                    // la imagen Docker multi-stage etiquetada con
+                    // "${IMAGE_TAG}" (NUNCA "latest").
+                    sh 'TODO-COMANDO-MVN-PACKAGE'
+                    sh 'TODO-COMANDO-DOCKER-BUILD-BACKEND'
+                }
+                dir('frontend') {
+                    // TODO: construya la imagen del frontend, pasando
+                    // VITE_API_URL como build-arg, etiquetada también con
+                    // "${IMAGE_TAG}".
+                    sh 'TODO-COMANDO-DOCKER-BUILD-FRONTEND'
+                }
+            }
+        }
+
+        stage('Publish to Nexus') {
+            steps {
+                // TODO: use withCredentials(...) con NEXUS_CREDENTIALS_ID
+                // para inyectar usuario/clave sin exponerlos en el log,
+                // y publique:
+                //   1) el .jar del backend en NEXUS_MAVEN_REPO (mvn deploy)
+                //   2) ambas imágenes Docker (docker login + docker push)
+                //      en NEXUS_REGISTRY, usando "${IMAGE_TAG}".
+                sh 'TODO-PUBLICACION-MAVEN-Y-DOCKER'
+            }
+        }
+
+        stage('Deploy & Smoke Test') {
+            steps {
+                // TODO: despliegue el stack de deploy/docker-compose.yml
+                // referenciando la imagen recién publicada (pase
+                // "${IMAGE_TAG}" como variable de entorno o mediante un
+                // archivo .env generado en este mismo stage), y valide
+                // con curl (con reintentos) que /api/tasks responda.
+                sh 'TODO-DEPLOY-DOCKER-COMPOSE'
+                sh 'TODO-SMOKE-TEST-CURL-CON-REINTENTOS'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline finalizado en verde. Artefactos publicados con tag: ${env.IMAGE_TAG}"
+        }
+        failure {
+            echo "El pipeline falló. Revise los logs de la etapa correspondiente antes de reintentar."
+        }
+    }
+}

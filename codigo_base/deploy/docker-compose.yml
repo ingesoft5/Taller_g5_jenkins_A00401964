@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  backend:
+    image: ${NEXUS_REGISTRY}/studytrack-backend:${IMAGE_TAG}
+    container_name: studytrack-backend
+    ports:
+      - "8080:8080"
+    networks: [product-network]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/tasks >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+  frontend:
+    image: ${NEXUS_REGISTRY}/studytrack-frontend:${IMAGE_TAG}
+    container_name: studytrack-frontend
+    ports:
+      - "3000:3000"
+    networks: [product-network]
+    depends_on:
+      backend:
+        condition: service_healthy
+networks:
+  product-network:
+    driver: bridge

@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  nexus:
+    image: sonatype/nexus3:3.68.1
+    container_name: nexus
+    networks: [cicd_network]
+    ports:
+      - "9181:8081"
+      - "9180:8082"
+    volumes:
+      - nexus_data:/nexus-data
+    environment:
+      - INSTALL4J_ADD_VM_PARAMS=-Xms1200m -Xmx1200m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/service/rest/v1/status >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 90s
+networks:
+  cicd_network:
+    external: true
+volumes:
+  nexus_data:
