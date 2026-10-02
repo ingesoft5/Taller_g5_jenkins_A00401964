@@ -10,5 +10,7 @@ RUN npm install -g smee-client
 # la URL de destino dentro de la red de Docker (el servicio "jenkins" en
 # el puerto 8080) se reciben como variables de entorno desde
 # docker-compose.yml (SMEE_URL y SMEE_TARGET). No las escriba aquí.
+USER node
+ENV SMEE_TARGET=http://jenkins:8080/github-webhook/
 
 ENTRYPOINT ["sh", "-c", "smee -u \"$SMEE_URL\" -t \"$SMEE_TARGET\""]

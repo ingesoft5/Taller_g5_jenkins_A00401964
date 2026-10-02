@@ -10,9 +10,10 @@ services:
       - "50001:50000"
     volumes:
       # EVALUATED: persistence of Jenkins state
-      - TODO-VOLUMEN:/var/jenkins_home
+      - jenkins_home:/var/jenkins_home
+      
       # EVALUATED: access to host Docker daemon
-      - TODO-SOCKET-DOCKER
+      - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "host.docker.internal:host-gateway"
   smee:
@@ -20,7 +21,7 @@ services:
     container_name: smee-client
     environment:
       # EVALUATED: create a unique channel at smee.io
-      - SMEE_URL=TODO-URL-DE-SU-CANAL-SMEE
+      - SMEE_URL=https://smee.io/YaxlUWhH4lMcF2
       - SMEE_TARGET=http://jenkins:8080/github-webhook/
     networks:
       - cicd_network
